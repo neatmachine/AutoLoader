@@ -6,38 +6,42 @@ local autoloader = _G.autoloader
 
 require("Modes")
 require("lists")
-local res                      = require("resources")
+local res                       = require("resources")
 
-local utils                    = require("autoloader-utils")
-local sets                     = require("autoloader-sets")
-local codex                    = require("autoloader-codex")
-local log                      = require("autoloader-logger")
+local utils                     = require("autoloader-utils")
+local sets                      = require("autoloader-sets")
+local codex                     = require("autoloader-codex")
+local log                       = require("autoloader-logger")
 
-autoloader.default_weapon_id   = 1
-autoloader.lockstyle           = nil
-autoloader.macro_book          = nil
-autoloader.idle_refresh        = nil
-autoloader.auto_movement       = false
-autoloader.idle_mode           = "default"
-autoloader.melee_mode          = "default"
-autoloader.magic_mode          = "default"
-autoloader.use_auto_sets       = true
-autoloader.auto_sets_threshold = 0.025
+autoloader.default_weapon_id    = 1
+autoloader.lockstyle            = nil
+autoloader.macro_book           = nil
+autoloader.idle_refresh         = nil
+autoloader.auto_movement        = false
+autoloader.idle_mode            = "default"
+autoloader.pet_mode             = "off"
+autoloader.melee_mode           = "default"
+autoloader.ranged_mode          = "default"
+autoloader.magic_mode           = "default"
+autoloader.use_auto_sets        = true
+autoloader.auto_sets_threshold  = 0.025
 
-local _idle_mode               = M { ["description"] = "Idle", "default", "dt", "mdt" }
-local _melee_mode              = M { ["description"] = "Melee", "default", "acc", "dt", "mdt", "off" }
-local _magic_mode              = M { ["description"] = "Magic", "default", "acc", "mb" }
-local _auto_movement_mode      = M { ["description"] = "Movement", "off", "on" }
-local _auto_exp_mode           = M { ["description"] = "Experience Points", "off", "on" }
+local _idle_mode                = M { ["description"] = "Idle", "default", "dt", "mdt" }
+local _pet_mode                 = M { ["description"] = "Pet", "default", "acc", "dt", "mdt", "off" }
+local _melee_mode               = M { ["description"] = "Melee", "default", "acc", "dt", "mdt", "off" }
+local _ranged_mode              = M { ["description"] = "Ranged", "default", "acc" }
+local _magic_mode               = M { ["description"] = "Magic", "default", "acc", "mb" }
+local _auto_movement_mode       = M { ["description"] = "Movement", "off", "on" }
+local _auto_exp_mode            = M { ["description"] = "Experience Points", "off", "on" }
 
-local _weapons                 = {}
-local _current_weapon_id       = autoloader.default_weapon_id
-local _keybinds                = {}
+local _weapons                  = {}
+local _current_weapon_id        = autoloader.default_weapon_id
+local _keybinds                 = {}
 
-autoloader._last_main_job_id     = autoloader._last_main_job_id or nil
-autoloader._last_sub_job_id      = autoloader._last_sub_job_id or nil
-autoloader._last_lockstyle_time  = autoloader._last_lockstyle_time or 0
-autoloader.lockstyle_cooldown    = autoloader.lockstyle_cooldown or 20
+autoloader._last_main_job_id    = autoloader._last_main_job_id or nil
+autoloader._last_sub_job_id     = autoloader._last_sub_job_id or nil
+autoloader._last_lockstyle_time = autoloader._last_lockstyle_time or 0
+autoloader.lockstyle_cooldown   = autoloader.lockstyle_cooldown or 20
 
 function autoloader.register_keybind(key, bind)
     if key and type(key) == "string" and bind and type(bind) == "string" then
@@ -93,7 +97,7 @@ function autoloader.equip_lock(set)
             disable("waist")
         end
 
-    autoloader.equip_clean(set)
+        autoloader.equip_clean(set)
     end
 end
 
@@ -205,6 +209,15 @@ function autoloader.register_idle_mode(value, display)
     end
 end
 
+local _registered_pet_modes = 0
+function autoloader.register_pet_mode(value, display)
+    if value then
+        local index = #_pet_mode + 1 + _registered_pet_modes -- Add to end
+        utils.insert_mode_option(_pet_mode, value, index, display)
+        _registered_pet_modes = _registered_pet_modes + 1
+    end
+end
+
 local _registered_melee_modes = 0
 function autoloader.register_melee_mode(value, display)
     if value then
@@ -268,34 +281,26 @@ local function exp_poll(now)
         return
     end
 
-    local jobpoints = nil
-    if player and player.index and windower.ffxi.get_mob_by_index(player.index) then
-        jobpoints = windower.ffxi.get_player().job_points[player.main_job:lower()].jp_spent -- check if we are master
+    local monsterToCheck = windower.ffxi.get_mob_by_target('bt')
+    if not monsterToCheck or monsterToCheck.hpp >= 33 then
+        monsterToCheck = windower.ffxi.get_mob_by_target('t')
     end
-
-    if jobpoints ~= 2100 and jobpoints ~= nil then -- Basically if not master
-        local monsterToCheck = windower.ffxi.get_mob_by_target('t')
-        if windower.ffxi.get_mob_by_target('t') then -- Sanity Check 
-            if #monsterToCheck.name:split(' ') >= 2 then
-                local monsterName = T(monsterToCheck.name:split(' '))
-                if monsterName[1] == "Apex" then
-                    if not exp_mode and monsterToCheck.hpp < 35 then --Check mobs HP Percentage if below 35vthen equip CP cape 
-                        autoloader.equip_clean({back = "Mecistopins Mantle"})
-                        disable("back") --Lock back
-                        exp_mode = true
-                    elseif exp_mode then
-                        exp_mode = false
-                        enable("back") --Else make sure the back is enabled
-                    end
-                end
+    if monsterToCheck then -- Sanity Check
+        if monsterToCheck.hpp < 33 then     --Check mobs HP Percentage if below 33 then equip CP cape
+            if not exp_mode then
+                autoloader.equip_clean({ back = "Mecistopins Mantle" })
+                disable("back") --Lock back
+                exp_mode = true
             end
         elseif exp_mode then
+            enable("back")     --Else make sure the back is enabled
             exp_mode = false
-            enable("back") --Else make sure the back is enabled
+            autoloader.status_refresh()
         end
     elseif exp_mode then
+        enable("back")     --Else make sure the back is enabled
         exp_mode = false
-        enable("back") --Else make sure the back is enabled
+        autoloader.status_refresh()
     end
 end
 
@@ -418,29 +423,31 @@ function autoloader.set_exp_mode(value)
     if not ok then
         log.error(err); return
     end
-    log.info(("EXP Polling: %s"):format(utils.pretty_mode_value(_auto_exp_mode.current)))
+    utils.echo(("EXP Polling: %s"):format(utils.pretty_mode_value(_auto_exp_mode.current)))
     update_exp_polling()
 end
 
-
 local function cycle_movement_mode()
     _auto_movement_mode:cycle()
-    log.info(("Movement Polling: %s"):format(utils.pretty_mode_value(_auto_movement_mode.current)))
+    utils.echo(("Movement Polling: %s"):format(utils.pretty_mode_value(_auto_movement_mode.current)))
     update_movement_polling()
 end
 
 local function cycle_exp_mode()
     _auto_exp_mode:cycle()
-    log.info(("EXP Polling: %s"):format(utils.pretty_mode_value(_auto_exp_mode.current)))
+    utils.echo(("EXP Polling: %s"):format(utils.pretty_mode_value(_auto_exp_mode.current)))
     update_exp_polling()
 end
 
-function autoloader.set_idle_mode(value)
+function autoloader.set_idle_mode(value, display_off)
     local ok, err = try_set_mode(_idle_mode, value)
     if not ok then
         log.error(err); return
     end
-    utils.echo("Idle: " .. utils.pretty_mode_value(autoloader.get_current_idle_mode()))
+
+    if not display_off then
+        utils.echo("Idle: " .. utils.pretty_mode_value(autoloader.get_current_idle_mode()))
+    end
     autoloader.status_refresh()
 end
 
@@ -457,6 +464,33 @@ end
 
 function autoloader.get_current_idle_mode()
     return _idle_mode.current
+end
+
+function autoloader.set_pet_mode(value, display_off)
+    local ok, err = try_set_mode(_pet_mode, value)
+    if not ok then
+        log.error(err); return
+    end
+
+    if not display_off then
+        utils.echo("Pet: " .. utils.pretty_mode_value(autoloader.get_current_pet_mode()))
+    end
+    autoloader.status_refresh()
+end
+
+local function cycle_pet_mode(back)
+    log.debug("Cycling pet.")
+    if back == true then
+        _pet_mode:cycleback()
+    else
+        _pet_mode:cycle()
+    end
+    utils.echo("Pet: " .. utils.pretty_mode_value(autoloader.get_current_pet_mode()))
+    autoloader.status_refresh()
+end
+
+function autoloader.get_current_pet_mode()
+    return _pet_mode.current
 end
 
 function autoloader.set_melee_mode(value, display_off)
@@ -677,10 +711,13 @@ local function get_ordered_mode_set_names(mode)
     local set_names = L {}
 
     local normalized_base = utils.sanitize(mode.description)
+
     if normalized_base then
         set_names:append(normalized_base)
-        if normalized_base == "idle" and player_should_refresh_idle() then
-            set_names:append(codex.CORE_SETS.idle.refresh)
+        if normalized_base == "idle" then
+            if player_should_refresh_idle() then
+                set_names:append(codex.CORE_SETS.idle.refresh)
+            end
         end
         if normalized_base == "melee" and player_is_dw() then
             set_names:append(codex.CORE_SETS.melee.dw)
@@ -694,15 +731,34 @@ local function get_ordered_mode_set_names(mode)
         end
     end
 
-    local current_weapon = _current_weapon_id and _weapons[_current_weapon_id]
-    if normalized_base == "melee" and current_weapon then
-        if normalized_base then
-            set_names:append(normalized_base .. ".weapon" .. tostring(_current_weapon_id))
+    if normalized_base == "pet" then
+        local current_pet = pet and pet.isvalid and pet.name and utils.sanitize(pet.name)
+        local pet_status = pet and pet.status
+        if pet_status then
+            normalized_base = normalized_base .. "." .. pet_status
+            set_names:append(normalized_base)
         end
         if normalized_current then
-            set_names:append(normalized_base .. "." .. normalized_current .. ".weapon" .. tostring(_current_weapon_id))
+            set_names:append(normalized_base .. "." .. normalized_current)
+            if current_pet then
+                set_names:append(normalized_base .. "." .. normalized_current .. "." .. current_pet)
+            end
+        else
+            set_names:append(normalized_base .. "." .. current_pet)
+        end
+    elseif normalized_base == "melee" then
+        local current_weapon = _current_weapon_id and _weapons[_current_weapon_id]
+        if current_weapon then
+            if normalized_base then
+                set_names:append(normalized_base .. ".weapon" .. tostring(_current_weapon_id))
+            end
+            if normalized_current then
+                set_names:append(normalized_base ..
+                    "." .. normalized_current .. ".weapon" .. tostring(_current_weapon_id))
+            end
         end
     end
+
     return set_names
 end
 
@@ -751,7 +807,6 @@ local function get_ordered_midcast_set_names(spell)
     return set_names:reverse()
 end
 
-
 local function get_ordered_precast_set_names(spell)
     local set_names = L {}
 
@@ -769,6 +824,7 @@ local function get_ordered_precast_set_names(spell)
         set_names:append("precast.fastcast") -- TODO: Do some kind of normalization on save instead of guessing
         set_names:append("precast.fast_cast")
         set_names:append("fast_cast")
+        set_names:append("fc")
     else
         if normalized_name then set_names:append(normalized_name) end
 
@@ -804,6 +860,7 @@ function get_sets()
     update_movement_polling()
 
     try_set_mode(_idle_mode, autoloader.idle_mode)
+    try_set_mode(_pet_mode, autoloader.pet_mode)
     try_set_mode(_melee_mode, autoloader.melee_mode)
     try_set_mode(_magic_mode, autoloader.magic_mode)
 
@@ -822,10 +879,10 @@ function get_sets()
     log.debug("Loaded weapons.")
 
     if autoloader.macro_book then
-        windower.send_command(("wait1;input /macro book %s;wait1;input /macro set 1"):format(autoloader.macro_book))
+        windower.send_command(("wait 1;input /macro book %s;wait 1;input /macro set 1"):format(autoloader.macro_book))
     end
     if autoloader.lockstyle then
-        windower.send_command("wait1;input /lockstyleset " .. autoloader.lockstyle)
+        windower.send_command("wait 1;input /lockstyleset " .. autoloader.lockstyle)
     end
 
     windower.send_command("wait 1;input //gs c status_refresh")
@@ -846,11 +903,29 @@ function status_change(new, old)
         autoloader.equip_clean(sets.build_set(get_ordered_mode_set_names(_melee_mode)))
     elseif new == "Resting" then
         autoloader.equip_clean(sets.build_set({ "idle.rest", "idle.resting", "rest", "resting" }))
+    elseif pet and pet.isvalid and _pet_mode.current ~= "off" then
+        autoloader.equip_clean(sets.build_set(get_ordered_mode_set_names(_pet_mode)))
     else
         autoloader.equip_clean(sets.build_set(get_ordered_mode_set_names(_idle_mode)))
     end
 
     utils.call_hook("after_status_change", autoloader.stub_after_status_change, new, old)
+end
+
+autoloader.stub_before_pet_status_change = function() end
+before_pet_status_change = autoloader.stub_before_pet_status_change
+autoloader.stub_after_pet_status_change = function() end
+after_pet_status_change = autoloader.stub_after_pet_status_change
+function pet_status_change(new, old)
+    local terminate = utils.call_hook("before_pet_status_change", autoloader.stub_before_pet_status_change, new, old)
+    if terminate then return end
+
+    local player_status = player and player.status
+    if (player_status == "Idle" or (player_status == "Engaged" and autoloader.get_current_melee_mode() == "off")) and autoloader.get_current_pet_mode() ~= "off" then
+        autoloader.status_refresh()
+    end
+
+    utils.call_hook("after_pet_status_change", autoloader.stub_after_pet_status_change, new, old)
 end
 
 autoloader.stub_before_precast = function() end
@@ -866,6 +941,17 @@ function precast(spell)
     utils.call_hook("after_precast", autoloader.stub_after_precast, spell)
 end
 
+autoloader.stub_before_pet_precast = function() end
+before_pet_precast = autoloader.stub_before_pet_precast
+autoloader.stub_after_pet_precast = function() end
+after_pet_precast = autoloader.stub_after_pet_precast
+function pet_precast(spell)
+    local terminate = utils.call_hook("before_pet_precast", autoloader.stub_before_pet_precast, spell)
+    if terminate then return end
+
+    utils.call_hook("after_pet_precast", autoloader.stub_after_pet_precast, spell)
+end
+
 autoloader.stub_before_midcast = function() end
 before_midcast = autoloader.stub_before_midcast
 autoloader.stub_after_midcast = function() end
@@ -879,6 +965,17 @@ function midcast(spell)
     utils.call_hook("after_midcast", autoloader.stub_after_midcast, spell)
 end
 
+autoloader.stub_before_pet_midcast = function() end
+before_pet_midcast = autoloader.stub_before_pet_midcast
+autoloader.stub_after_pet_midcast = function() end
+after_pet_midcast = autoloader.stub_after_pet_midcast
+function pet_midcast(spell)
+    local terminate = utils.call_hook("before_pet_midcast", autoloader.stub_before_pet_midcast, spell)
+    if terminate then return end
+
+    utils.call_hook("after_pet_midcast", autoloader.stub_after_pet_midcast, spell)
+end
+
 autoloader.stub_before_aftercast = function() end
 before_aftercast = autoloader.stub_before_aftercast
 autoloader.stub_after_aftercast = function() end
@@ -890,6 +987,19 @@ function aftercast(spell)
     autoloader.status_refresh()
 
     utils.call_hook("after_aftercast", autoloader.stub_after_aftercast, spell)
+end
+
+autoloader.stub_before_pet_aftercast = function() end
+before_pet_aftercast = autoloader.stub_before_pet_aftercast
+autoloader.stub_after_pet_aftercast = function() end
+after_pet_aftercast = autoloader.stub_after_pet_aftercast
+function pet_aftercast(spell)
+    local terminate = utils.call_hook("before_pet_aftercast", autoloader.stub_before_pet_aftercast, spell)
+    if terminate then return end
+
+    autoloader.status_refresh()
+
+    utils.call_hook("after_pet_aftercast", autoloader.after_pet_aftercast, spell)
 end
 
 autoloader.stub_before_file_unload = function() end
@@ -928,6 +1038,16 @@ local function handle_idle_command(cmd)
     end
 
     cycle_idle_mode(cmd and (cmd == "cycle back" or cmd == "cycleback"))
+end
+
+local function handle_pet_command(cmd)
+    cmd = cmd and cmd:lower()
+    if cmd and cmd ~= "cycle" and cmd ~= "cycle back" and cmd ~= "cycleback" then
+        autoloader.set_pet_mode(cmd)
+        return
+    end
+
+    cycle_pet_mode(cmd and (cmd == "cycle back" or cmd == "cycleback"))
 end
 
 local function handle_melee_command(cmd)
@@ -979,12 +1099,7 @@ local function handle_movement_command(cmd)
 end
 
 local function handle_exp_command(cmd)
-    if cmd then
-        autoloader.set_exp_mode(cmd)
-        return
-    else
-        cycle_exp_mode()
-    end
+    cycle_exp_mode()
 end
 
 local _help_topics, _help_order = {}, {}
@@ -1095,6 +1210,8 @@ function self_command(cmd)
             sets.handle_sets_command(rest2)
         elseif a2 == "idle" then
             handle_idle_command(rest2)
+        elseif a2 == "pet" then
+            handle_pet_command(rest2)
         elseif a2 == "melee" then
             handle_melee_command(rest2)
         elseif a2 == "magic" then

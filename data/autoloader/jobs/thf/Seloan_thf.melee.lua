@@ -1,0 +1,15 @@
+sets.exported = {
+    range="Raider's Bmrng.",
+    head="Mummu Bonnet +1",
+    body="Mummu Jacket +2",
+    hands="Mummu Wrists +1",
+    legs="Mummu Kecks +2",
+    feet="Mummu Gamash. +1",
+    neck="Sanctity Necklace",
+    waist="Sailfi Belt +1",
+    left_ear="Suppanomimi",
+    right_ear="Eabani Earring",
+    left_ring="Petrov Ring",
+    right_ring="Rajas Ring",
+    back="Toutatis's Cape",
+}

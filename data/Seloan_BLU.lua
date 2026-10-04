@@ -7,19 +7,37 @@ local utils = require("autoloader-utils")
 include("Modes")
 
 autoloader.auto_movement = "on"
-
--- R1+Up = ^F7
-autoloader.register_keybind("^F7", "input /ma \"Sudden Lunge\" <t>")
--- R1+Down = ^F8
-autoloader.register_keybind("^F8", "input /target <me>;input /recast Diffusion;input /ja Diffusion <stpc>")
-
--- R1+Left = ^F9
--- R1+Right = ^F10
-
--- R1+L1+Left = !F9
--- R1+L1+Right = !F10
-
 local _learning_mode = M { "off", "on" }
+
+function before_get_sets()
+    -- R1+Up = ^F7
+    autoloader.register_keybind("^F7", "input /ma \"Sudden Lunge\" <t>")
+    -- R1+Down = ^F8
+    if player and player.sub_job and player.sub_job:lower() == "nin" then
+        autoloader.register_keybind("^F8", "input //gs c utsusemi")
+    else
+        autoloader.register_keybind("^F8", "input /target <me>;input /recast Occultation;input /ma Occultation <stpc>")
+    end
+
+    -- R1+Left = ^F9
+    autoloader.register_keybind("^F9", "input /target <me>;input /recast \"Chain Affinity\";input /ja \"Chain Affinity\" <stpc>")
+
+    -- R1+Right = ^F10
+    autoloader.register_keybind("^F10", "input /target <me>;input /recast \"Burst Affinity\";input /ja \"Burst Affinity\" <stpc>")
+    
+    -- R1+L1+Up = !F7
+    autoloader.register_keybind("!F7", "input /target <me>;input /recast Fantod;input /ma Fantod <stpc>")
+
+    -- R1+L1+Down = !F8
+    autoloader.register_keybind("!F8", "input /target <me>;input /recast Cocoon;input /ma Cocoon <stpc>")
+
+    -- R1+L1+Left = !F9
+    autoloader.register_keybind("!F9", "input /target <me>;input /recast \"Erratic Flutter\";input /ma \"Erratic Flutter\" <stpc>")
+
+    -- R1+L1+Right = !F10
+    autoloader.register_keybind("!F10", "input /target <me>;input /recast \"Battery Charge\";input /ma \"Battery Charge\" <stpc>")
+
+end
 
 local function is_blue_magic(spell)
     return spell and spell.action_type and spell.action_type:lower() == "magic" and spell.skill and
@@ -60,7 +78,6 @@ function after_midcast(spell)
         end
     end
 end
-
 
 function before_self_command(cmd)
     if cmd == "utsusemi" then

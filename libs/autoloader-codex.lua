@@ -1667,9 +1667,8 @@ function codex.get_blood_pact_set(spell_name)
         return codex.CASTING_SETS.bp.default
     end
 
-    for category, list in pairs(codex.BLOOD_PACT_SETS) do
+    for bp_set, list in pairs(codex.BLOOD_PACT_SETS) do
         for i = 1, #list do
-            local bp_set = codex.CASTING_SETS.bp[category]
             if list[i] == spell_name and bp_set then
                 return bp_set
             end
@@ -2471,13 +2470,7 @@ function codex.player_can_cast(name)
     local req_main    = spell.levels and spell.levels[main_id]
     local req_sub     = spell.levels and spell.levels[sub_id]
 
-    local meets_level =
-        (req_main and main_lvl >= req_main) or
-        (req_sub and sub_lvl >= req_sub)
 
-    if not meets_level then
-        return false, spell, "job_or_level"
-    end
 
     -- 3) Check “learned” for normal magic.
     --    get_spells() returns [id] = true/false for *learned*, not castable. :contentReference[oaicite:2]{index=2}

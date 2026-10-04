@@ -1,0 +1,15 @@
+sets.exported = {
+    main={ name="Espiritus", augments={'MP+19','Pet: "Mag.Atk.Bns."+9','Pet: Mag. Acc.+9',}},
+    ammo="Sancus Sachet +1",
+    head="Beckoner's Horn",
+    body="Convo. Doublet",
+    hands="Con. Bracers +1",
+    legs="Summoner's Spats",
+    feet="Apogee Pumps",
+    neck="Caller's Pendant",
+    waist="Lucidity Sash",
+    left_ear="Lodurr Earring",
+    left_ring="Evoker's Ring",
+    right_ring="Varar Ring",
+    back={ name="Campestres's Cape", augments={'Pet: M.Acc.+20 Pet: M.Dmg.+20','Mag. Acc+20 /Mag. Dmg.+20','Pet: Mag. Acc.+10','"Fast Cast"+10',}},
+}
