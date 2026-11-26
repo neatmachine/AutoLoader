@@ -36,7 +36,7 @@ local function sticky_chat_color(s, color_index)
   return cc .. s:gsub('([ ,;:])', '%1' .. cc)
 end
 
-local function format_message(tag, msg, color, no_prefix)
+local function format_message(tag, msg, color)
   if windower and windower.add_to_chat then
     if type(msg) ~= "string" then
       msg = tostring(msg)
@@ -46,16 +46,16 @@ local function format_message(tag, msg, color, no_prefix)
         :gsub("\194\160", " ")    -- non-breaking space (UTF-8) -> space (optional but handy)
         :gsub("[%z\1-\31\127]", "") -- strip control chars
 
-    local prefix = no_prefix and "" or ("%s%s "):format(logger.options.prefix, (tag and tag ~= "" and "(" .. tag .. ")") or "")
+    local prefix = ("%s%s "):format(logger.options.prefix, (tag and tag ~= "" and "(" .. tag .. ")") or "")
     windower.add_to_chat(color, sticky_chat_color(prefix .. sanitized, color))
   else
     print("AutoLoader Error: Couldn't find windower.add_to_chat.")
   end
 end
 
-function logger.info(msg, force, no_prefix)
+function logger.info(msg, force)
   if force or _verbosity_level[logger.mode.current] >= _verbosity_level[logger.VERBOSITY .INFO] then
-    format_message((force and "") or _verbosity_display[logger.VERBOSITY .INFO], msg, logger.options.color, no_prefix)
+    format_message((force and "") or _verbosity_display[logger.VERBOSITY .INFO], msg, logger.options.color)
   end
 end
 

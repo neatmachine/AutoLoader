@@ -814,7 +814,7 @@ function get_sets()
         end
         log.info(("Shortcuts (%s)"):format(player.main_job))
         for key, bind in pairs(_keybinds) do
-            log.info(key .. ": " .. bind, false, true)
+            log.info(key .. ": " .. bind)
         end
     end
 
