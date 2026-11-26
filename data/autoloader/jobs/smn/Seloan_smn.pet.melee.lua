@@ -1,0 +1,16 @@
+sets.exported = {
+    main="Gridarvor",
+    sub="Oneiros Grip",
+    ammo="Sancus Sachet +1",
+    head="Beckoner's Horn",
+    body="Shomonjijoe +1",
+    hands={ name="Merlinic Dastanas", augments={'Pet: "Mag.Atk.Bns."+29','AGI+4','Magic burst dmg.+4%','Mag. Acc.+9 "Mag.Atk.Bns."+9',}},
+    legs="Assid. Pants +1",
+    feet="Apogee Pumps",
+    neck="Caller's Pendant",
+    waist="Lucidity Sash",
+    right_ear="Evans Earring",
+    left_ring="Evoker's Ring",
+    right_ring="Varar Ring",
+    back={ name="Campestres's Cape", augments={'Pet: Acc.+20 Pet: R.Acc.+20 Pet: Atk.+20 Pet: R.Atk.+20','Accuracy+20 Attack+20','Pet: Accuracy+10 Pet: Rng. Acc.+10','Pet: Haste+10','Pet: Damage taken -5%',}},
+}

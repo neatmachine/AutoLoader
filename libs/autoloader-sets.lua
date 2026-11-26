@@ -15,6 +15,10 @@ local _root = sets._root or (windower and windower.addon_path) or "."
 local _cache = {}
 
 sets.naked = {
+  main = empty,
+  sub = empty,
+  ranged = empty,
+  ammo = empty,
   head = empty,
   body = empty,
   hands = empty,
@@ -176,26 +180,22 @@ function sets.build_set(...)
     if type(part) == "table" then
       combined = (combined == nil) and part or set_combine(combined or {}, part or {})
       count = count + 1
-      log.debug(("Added %s"):format(n))
     else
-      if part == nil then
-        log.debug(("Set not found %s"):format(n))
-      else
+      if part then
         log.debug(("%s returned %s; skipped"):format(n, type(part)))
       end
     end
   end
 
   if not combined then
-    log.debug("No sets resolved")
     return nil
   end
 
-  log.debug(("Combined %d set(s)"):format(count))
   return combined
 end
 
 function sets.get(name, use_auto_sets)
+  log.debug(name)
   if not name or type(name) ~= "string" then return nil end
 
   name = utils.sanitize(name)

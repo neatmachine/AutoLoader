@@ -1,0 +1,18 @@
+sets.exported = {
+    main="Thief's Knife",
+    sub="Twilight Knife",
+    range="Darkwing",
+    ammo="Acid Bolt",
+    head="Mummu Bonnet +1",
+    body="Shned. Tabard +1",
+    hands="Plun. Armlets",
+    legs="Shned. Tights +1",
+    feet="Mummu Gamash. +1",
+    neck="Sanctity Necklace",
+    waist="Twilight Belt",
+    left_ear="Suppanomimi",
+    right_ear="Eabani Earring",
+    left_ring="Keen Ring",
+    right_ring="Rajas Ring",
+    back="Assassin's Cape",
+}

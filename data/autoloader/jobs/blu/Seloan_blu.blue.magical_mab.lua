@@ -1,0 +1,15 @@
+sets.exported = {
+    ammo="Mavi Tathlum",
+    head="Aya. Zucchetto +2",
+    body="Ayanmo Corazza +2",
+    hands="Aya. Manopolas +2",
+    legs="Aya. Cosciales +2",
+    feet="Aya. Gambieras +2",
+    neck="Sanctity Necklace",
+    waist="Twilight Belt",
+    left_ear="Moldavite Earring",
+    right_ear="Hecate's Earring",
+    left_ring="Jhakri Ring",
+    right_ring="Ayanmo Ring",
+    back="Cornflower Cape",
+}
