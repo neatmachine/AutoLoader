@@ -23,7 +23,7 @@ autoloader.pet_mode             = "off"
 autoloader.melee_mode           = "default"
 autoloader.ranged_mode          = "default"
 autoloader.magic_mode           = "default"
-autoloader.use_auto_sets        = true
+autoloader.use_auto_sets        = false
 autoloader.auto_sets_threshold  = 0.025
 
 local _idle_mode                = M { ["description"] = "Idle", "default", "dt", "mdt" }
@@ -868,10 +868,6 @@ function get_sets()
         for key, bind in pairs(_keybinds) do
             local ok = pcall(function() windower.send_command(("bind %s %s"):format(key, bind)) end)
             if not ok then log.error(("Failed to bind %s => %s"):format(key, bind)) end
-        end
-        log.info(("Shortcuts (%s)"):format(player.main_job))
-        for key, bind in pairs(_keybinds) do
-            log.info(key .. ": " .. bind)
         end
     end
 
