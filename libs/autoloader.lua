@@ -405,6 +405,11 @@ local function update_exp_polling()
         autoloader.poll.ensure_registration(exp_poll_def.key, exp_poll_def.interval, exp_poll_def.fn)
     else
         autoloader.poll.unregister(exp_poll_def.key)
+        if exp_mode then
+            enable("back")
+            exp_mode = false
+            autoloader.status_refresh()
+        end
         log.debug("Unregistered " .. exp_poll_def.key)
     end
 end

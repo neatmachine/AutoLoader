@@ -122,6 +122,8 @@ Named spells assume midcast, named anything else assumes precast. (If you do sav
 /gs c a help sets
 ```
 
+`//gs c a exp` toggles EXP cape polling. Turning it off releases any back-slot lock applied by EXP polling and refreshes your normal status gear.
+
 ## Philosophy
 
 - **Plain GearSwap tables.** Everything it generates/saves is just a normal set you can open and edit. This makes it immediately portable to existing luas.
