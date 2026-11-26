@@ -869,10 +869,6 @@ function get_sets()
             local ok = pcall(function() windower.send_command(("bind %s %s"):format(key, bind)) end)
             if not ok then log.error(("Failed to bind %s => %s"):format(key, bind)) end
         end
-        log.info(("Shortcuts (%s)"):format(player.main_job))
-        for key, bind in pairs(_keybinds) do
-            log.info(key .. ": " .. bind)
-        end
     end
 
     if autoloader.use_auto_sets then
