@@ -45,6 +45,34 @@ function autoloader.register_keybind(key, bind)
     end
 end
 
+local function natural_sort_key(key)
+    return (key:gsub("%d+", function(number)
+        number = number:gsub("^0+", "")
+        -- Compare digit counts before digits, without converting large numbers.
+        return ("%010d%s"):format(#number, number)
+    end))
+end
+
+local function print_shortcuts()
+    local keys = {}
+    for key in pairs(_keybinds) do
+        keys[#keys + 1] = key
+    end
+    if #keys == 0 then return end
+
+    table.sort(keys, function(a, b)
+        local sorted_a, sorted_b = natural_sort_key(a), natural_sort_key(b)
+        if sorted_a == sorted_b then return a < b end
+        return sorted_a < sorted_b
+    end)
+
+    local lines = { ("Shortcuts (%s)"):format(player.main_job) }
+    for _, key in ipairs(keys) do
+        lines[#lines + 1] = key .. ": " .. _keybinds[key]
+    end
+    log.info_lines(lines)
+end
+
 function autoloader.equip_lock(set)
     if set then
         if set.main and set.main ~= "" then
@@ -831,6 +859,7 @@ function get_sets()
     windower.send_command("wait 1;input //gs c status_refresh")
 
     utils.call_hook("after_get_sets", autoloader.stub_after_get_sets)
+    print_shortcuts()
 end
 
 autoloader.stub_before_status_change = function() end

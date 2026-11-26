@@ -59,6 +59,19 @@ function logger.info(msg, force)
   end
 end
 
+function logger.info_lines(lines)
+  if _verbosity_level[logger.mode.current] < _verbosity_level[logger.VERBOSITY .INFO] then return end
+  for i, line in ipairs(lines) do
+    if i == 1 then
+      logger.info(line)
+    elseif windower and windower.add_to_chat then
+      windower.add_to_chat(logger.options.color, sticky_chat_color(line, logger.options.color))
+    else
+      print("AutoLoader Error: Couldn't find windower.add_to_chat.")
+    end
+  end
+end
+
 local function _callsite(skip)
   local info = debug.getinfo(2 + (skip or 0), "nSl")
   if not info then return "<unknown>", "?:0", "?", "?" end
