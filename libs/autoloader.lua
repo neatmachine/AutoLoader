@@ -23,7 +23,7 @@ autoloader.pet_mode             = "off"
 autoloader.melee_mode           = "default"
 autoloader.ranged_mode          = "default"
 autoloader.magic_mode           = "default"
-autoloader.use_auto_sets        = true
+autoloader.use_auto_sets        = false
 autoloader.auto_sets_threshold  = 0.025
 
 local _idle_mode                = M { ["description"] = "Idle", "default", "dt", "mdt" }
