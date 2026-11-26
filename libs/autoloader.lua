@@ -21,7 +21,7 @@ autoloader.auto_movement       = false
 autoloader.idle_mode           = "default"
 autoloader.melee_mode          = "default"
 autoloader.magic_mode          = "default"
-autoloader.use_auto_sets       = true
+autoloader.use_auto_sets       = false
 autoloader.auto_sets_threshold = 0.025
 
 local _idle_mode               = M { ["description"] = "Idle", "default", "dt", "mdt" }
@@ -43,34 +43,6 @@ function autoloader.register_keybind(key, bind)
     if key and type(key) == "string" and bind and type(bind) == "string" then
         _keybinds[key] = bind
     end
-end
-
-local function natural_sort_key(key)
-    return (key:gsub("%d+", function(number)
-        number = number:gsub("^0+", "")
-        -- Compare digit counts before digits, without converting large numbers.
-        return ("%010d%s"):format(#number, number)
-    end))
-end
-
-local function print_shortcuts()
-    local keys = {}
-    for key in pairs(_keybinds) do
-        keys[#keys + 1] = key
-    end
-    if #keys == 0 then return end
-
-    table.sort(keys, function(a, b)
-        local sorted_a, sorted_b = natural_sort_key(a), natural_sort_key(b)
-        if sorted_a == sorted_b then return a < b end
-        return sorted_a < sorted_b
-    end)
-
-    local lines = { ("Shortcuts (%s)"):format(player.main_job) }
-    for _, key in ipairs(keys) do
-        lines[#lines + 1] = key .. ": " .. _keybinds[key]
-    end
-    log.info_lines(lines)
 end
 
 function autoloader.equip_lock(set)
@@ -840,6 +812,10 @@ function get_sets()
             local ok = pcall(function() windower.send_command(("bind %s %s"):format(key, bind)) end)
             if not ok then log.error(("Failed to bind %s => %s"):format(key, bind)) end
         end
+        log.info(("Shortcuts (%s)"):format(player.main_job))
+        for key, bind in pairs(_keybinds) do
+            log.info(key .. ": " .. bind, false, true)
+        end
     end
 
     if autoloader.use_auto_sets then
@@ -859,7 +835,6 @@ function get_sets()
     windower.send_command("wait 1;input //gs c status_refresh")
 
     utils.call_hook("after_get_sets", autoloader.stub_after_get_sets)
-    print_shortcuts()
 end
 
 autoloader.stub_before_status_change = function() end
